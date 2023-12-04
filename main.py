@@ -1,4 +1,18 @@
 ########################################################################
+# Project for CPSC 481
+# By Jeffrey Rhoten
+#
+# main.py
+#
+# DESCRIPTION - WIP
+########################################################################
+
+# Import Statements
+
+# Global Variables
+debug = True
+
+########################################################################
 
 class Agent:
     def __init__(self, X=(0, "A")):
@@ -34,8 +48,9 @@ class Node():
 ########################################################################
 
 def astar(grid, hGrid, start, end, debug):
+    # Adapted from website https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2
     if debug == True:
-        print("astar func Begin")
+        print("astar func START")
         #print("Given values:")
         #print(grid)
         #print(hGrid)
@@ -53,6 +68,7 @@ def astar(grid, hGrid, start, end, debug):
     closedList = []
     if debug == True:
         print("openList and closedList initialized")
+    numRows, numColumns = grid.shape
     
     # Add startNode to open
     openList.append(startNode)
@@ -84,27 +100,55 @@ def astar(grid, hGrid, start, end, debug):
         # Get children
         import numpy
         children = []
-        for newPos in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
-            #WIP WIP WIP
-            return
+        for newPos in [(0, 1), (1, 0), (0, -1), (-1, 0)]:   # Adjacent spaces in taxicab
+            
+            # Get node position
+            nodePos = (currentNode.position[0] + newPos[0], currentNode.position[1] + newPos[1])
 
-        #print("adding tuples")
-        #pos1 = (5, 5)
-        #adjust = (2, 3)
-        #pos2 = tuple(numpy.add(pos1, adjust))
+            # Ensure within grid range
+            if nodePos[0] < 0 or nodePos[0] > numRows or nodePos[1] < 0 or nodePos[1] > numColumns:
+                continue
 
+            # Ensure terrain is traversable
+            if grid.iat[nodePos] == 0:      # Using 1 for passable terrain, 0 for impassable
+                continue
 
-        # Loop through children
+            # Create new node
+            newNode = Node(currentNode, nodePos)
+
+            # Append child
+            children.append(newNode)
     
+        print("\n\nLet's test some math")
+        x = 3**2
+        print(f"x is: {x}\n\n")
+
+        """
+        # Loop through children
+        for child in children:
+
+            for closedChild in closedList:
+                if child == closedChild:
+                    continue
+
+            # Create cost values
+            #self.dist = 0
+            #self.hDist = 0
+            #self.hGrid = 0
+            #self.rand = 0
+            #self.cost = 0
+        """
+
+
 
     if debug == True:
-        print("astar func End")
+        print("astar func END")
     return
 
 ########################################################################
 
 def main():
-    debug = True
+    
 
     # Import Libraries
     import pandas as pd
