@@ -36,33 +36,65 @@ class Node():
 def astar(grid, hGrid, start, end, debug):
     if debug == True:
         print("astar func Begin")
-        print("Given values:")
-        print(grid)
-        print(hGrid)
-        print(start)
-        print(end)
+        #print("Given values:")
+        #print(grid)
+        #print(hGrid)
+        #print(start)
+        #print(end)
 
     # Create Start & End nodes
+    startNode = Node(None, start)
+    endNode = Node(None, end)
+    if debug == True:
+        print("startNode and endNode initialized")
 
     # Create Open & Closed lists
     openList = []
     closedList = []
     if debug == True:
         print("openList and closedList initialized")
-        print(openList)
-        print(closedList)
+    
+    # Add startNode to open
+    openList.append(startNode)
 
     # Loop begins A* search
+    while (len(openList) > 0):
 
-    # Get current node
+        # Get current node (lowest cost node in openList)
+        currentNode = openList[0]
+        currentIndex = 0
+        for index, item in enumerate(openList):
+            if item.cost < currentNode.cost:
+                currentNode = item
+                currentIndex = index
 
-    # Pop current node, add to closed
+        # Pop current node, add to closed
+        openList.pop(currentIndex)
+        closedList.append(currentNode)
 
-    # Check if goal found
+        # Check if goal found
+        if currentNode == endNode:
+            path = []
+            current = currentNode
+            while current is not None:
+                path.append(current.position)
+                current = current.parent
+            return path[::-1]
 
-    # Get children
+        # Get children
+        import numpy
+        children = []
+        for newPos in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
+            #WIP WIP WIP
+            return
 
-    # Loop through children
+        #print("adding tuples")
+        #pos1 = (5, 5)
+        #adjust = (2, 3)
+        #pos2 = tuple(numpy.add(pos1, adjust))
+
+
+        # Loop through children
     
 
     if debug == True:
@@ -86,12 +118,14 @@ def main():
     # Initialize Heuristic Grid
     hGrid = pd.read_csv(r"E:\School\Fullerton\2023_ Fall\CPSC 481\CPSC481 Project\CPSC481\grids - testGrid1Heuristic.csv")
     
+
     # Test print grids
     print("grid:")
     print(grid)
     print("hGrid:")
     print(hGrid)
-
+ 
+    
     # Initialize path of traversal
     path = []
     if debug == True:
