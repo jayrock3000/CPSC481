@@ -8,9 +8,12 @@
 ########################################################################
 
 # Import Statements
+import pandas as pd
+import numpy
+import math
 
 # Global Variables
-debug = True
+DEBUG = True
 
 ########################################################################
 
@@ -47,9 +50,9 @@ class Node():
 
 ########################################################################
 
-def astar(grid, hGrid, start, end, debug):
+def astar(grid, hGrid, start, end):
     # Adapted from website https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2
-    if debug == True:
+    if DEBUG == True:
         print("astar func START")
         #print("Given values:")
         #print(grid)
@@ -60,13 +63,13 @@ def astar(grid, hGrid, start, end, debug):
     # Create Start & End nodes
     startNode = Node(None, start)
     endNode = Node(None, end)
-    if debug == True:
+    if DEBUG == True:
         print("startNode and endNode initialized")
 
     # Create Open & Closed lists
     openList = []
     closedList = []
-    if debug == True:
+    if DEBUG == True:
         print("openList and closedList initialized")
     numRows, numColumns = grid.shape
     
@@ -98,7 +101,6 @@ def astar(grid, hGrid, start, end, debug):
             return path[::-1]
 
         # Get children
-        import numpy
         children = []
         for newPos in [(0, 1), (1, 0), (0, -1), (-1, 0)]:   # Adjacent spaces in taxicab
             
@@ -118,41 +120,42 @@ def astar(grid, hGrid, start, end, debug):
 
             # Append child
             children.append(newNode)
-    
-        print("\n\nLet's test some math")
-        x = 3**2
-        print(f"x is: {x}\n\n")
-
-        """
+        
         # Loop through children
         for child in children:
 
+            # Catch children already closed
             for closedChild in closedList:
                 if child == closedChild:
                     continue
 
             # Create cost values
-            #self.dist = 0
-            #self.hDist = 0
-            #self.hGrid = 0
-            #self.rand = 0
-            #self.cost = 0
-        """
+            child.dist = currentNode.dist + 1
+            child.hDist = math.sqrt((child.position[0] - endNode.position[0]) ** 2 ) + ((child.position[1] - endNode.position[1]) ** 2 )
+                        #Sqrt added to compensate for hGrid
+            child.hGrid = hGrid.iat[child.position]
+            child.rand = 0      # Random offset variation disabled for now
+            child.cost = child.dist + child.hDist + child.hGrid + child.rand
 
+            # Handle children already in open
+            for openNode in openList:
+                # Skip if new path is longer
+                if child == openNode and child.dist > openNode.dist:
+                    continue
+            
+            # Add child to open list
+            openList.append(child)
 
+        #print("adding tuples")
+        #pos1 = (5, 5)
+        #adjust = (2, 3)
+        #pos2 = tuple(numpy.add(pos1, adjust))
 
-    if debug == True:
-        print("astar func END")
-    return
 
 ########################################################################
 
 def main():
-    
-
-    # Import Libraries
-    import pandas as pd
-
+        
     # Initialize Grid 
     #   Create dataframe to hold csv path cost grid
     #   Access grid values using grid.iat[0,0], grid.iat[0, 1], etc
@@ -172,7 +175,7 @@ def main():
     
     # Initialize path of traversal
     path = []
-    if debug == True:
+    if DEBUG == True:
         print("\npath initialized as ", end='')
         print(path)
 
@@ -180,7 +183,7 @@ def main():
     startLoc = (10, 3)
     endLoc = (1, 3)
     tupac = Agent(startLoc)
-    if debug == True:
+    if DEBUG == True:
         print("agent initialized with location ", end='')
         print(tupac.getLoc())
         print("endLoc initialized with location ", end='')
@@ -193,9 +196,17 @@ def main():
     """
 
     # Perform A* Search
-    astar(grid, hGrid, startLoc, endLoc, debug)
+    path = astar(grid, hGrid, startLoc, endLoc)
+    print("\nAStar search complete.\nPath:")
+    print(path)
 
-    if debug == True:
+    print("And some quick tests about specific path values")
+    print(path[0])
+    print(path[1])
+    print(path[2])
+    print(f"cost of path[0] is {hGrid.iat[path[0]]}")
+
+    if DEBUG == True:
         print("\nProgram has closed successfully\n")
 
 ########################################################################
