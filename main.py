@@ -15,6 +15,7 @@ import math
 # Global Variables
 DEBUG = True
 
+
 ########################################################################
 
 class Agent:
@@ -27,6 +28,7 @@ class Agent:
     def getLoc(self):
         return self.location 
     
+
 ########################################################################
 
 class Node():
@@ -48,6 +50,7 @@ class Node():
     def __eq__(self, other):
         return self.position == other.position
 
+
 ########################################################################
 
 def astar(grid, hGrid, start, end):
@@ -63,14 +66,11 @@ def astar(grid, hGrid, start, end):
     # Create Start & End nodes
     startNode = Node(None, start)
     endNode = Node(None, end)
-    if DEBUG == True:
-        print("startNode and endNode initialized")
-
+    
     # Create Open & Closed lists
     openList = []
     closedList = []
-    if DEBUG == True:
-        print("openList and closedList initialized")
+
     numRows, numColumns = grid.shape
     
     # Add startNode to open
@@ -98,6 +98,9 @@ def astar(grid, hGrid, start, end):
             while current is not None:
                 path.append(current.position)
                 current = current.parent
+
+            if DEBUG == True:
+                print("astar func END")
             return path[::-1]
 
         # Get children
@@ -153,6 +156,42 @@ def astar(grid, hGrid, start, end):
 
 
 ########################################################################
+# Function for adding random amounts to heuristics
+
+def increasePathCost(path, hGrid):
+    if DEBUG == True:
+        print("increasePathCost func START")
+
+    shortPath = path.copy()
+
+    # Remove start and end
+    shortPath.pop(len(path)-1)
+    shortPath.pop(0)
+
+
+    for loc in shortPath:
+        hGrid.iat[loc] = hGrid.iat[loc] + 10
+
+    return hGrid
+
+
+########################################################################
+# Function for printing a basic visualization of a path
+
+def visualizePath(path, start, end, visGrid):
+    if DEBUG == True:
+        print("visualizePath func START")
+    
+    thisVis = visGrid.copy()
+    for loc in path:
+        thisVis.iat[loc] = 22
+
+    thisVis.iat[start] = 11
+    thisVis.iat[end] = 33
+    
+    print(thisVis)
+
+########################################################################
 
 def main():
         
@@ -160,11 +199,12 @@ def main():
     #   Create dataframe to hold csv path cost grid
     #   Access grid values using grid.iat[0,0], grid.iat[0, 1], etc
     #   Access grid size using grid.shape, and individual dimensions with grid.shape[0] & grid.shape[1]
-    grid = pd.read_csv(r"E:\School\Fullerton\2023_ Fall\CPSC 481\CPSC481 Project\CPSC481\grids - testGrid1.csv")
+    grid = pd.read_csv(r"grids - testGrid1.csv")
    
     # Initialize Heuristic Grid
-    hGrid = pd.read_csv(r"E:\School\Fullerton\2023_ Fall\CPSC 481\CPSC481 Project\CPSC481\grids - testGrid1Heuristic.csv")
-    
+    hGrid = pd.read_csv(r"grids - testGrid2Heuristic.csv")
+
+    visGrid = pd.read_csv(r"grids - testGrid3Path.csv")
 
     # Test print grids
     print("grid:")
@@ -175,39 +215,69 @@ def main():
     
     # Initialize path of traversal
     path = []
-    if DEBUG == True:
-        print("\npath initialized as ", end='')
-        print(path)
+    allPaths = []
 
     # Intialize Agent
-    startLoc = (10, 3)
-    endLoc = (1, 3)
-    tupac = Agent(startLoc)
+    start = (10, 3)
+    end = (1, 3)
+    tupac = Agent(start)
     if DEBUG == True:
         print("agent initialized with location ", end='')
         print(tupac.getLoc())
-        print("endLoc initialized with location ", end='')
-        print(endLoc)
+        print("end initialized with location ", end='')
+        print(end)
+
+    # Perform Initial A* Search
+    path = astar(grid, hGrid, start, end)
+    allPaths.append(path)
+
+    # Perform Addititional A* Searches
+    addlSearches = 4
+    for n in range(addlSearches):
+        hGrid = increasePathCost(path, hGrid)
+        path = astar(grid, hGrid, start, end)
+        allPaths.append(path)
+    
+    #allPaths.reverse()
+    print("\n\nAll Paths:")
+    count = 1
+    for x in allPaths:
+        print(f"Path {count}:\n{x}\n")
+        visualizePath(x, start, end, visGrid)
+        count +=1
+
+    
+
+
 
     """
-    print("\n\nTesting getting values from the grid")
-    print(hGrid.iat[1, 3])
-    print(hGrid.iat[endLoc])
+    # Create second version
+    hGrid2 = hGrid.copy()
+    hGrid2 = increasePathCost(path, hGrid2)
+    path2 = astar(grid, hGrid2, startLoc, endLoc)
+    print("\nSecond AStar search complete.\nPath:")
+    print(path2)
+
+    # Create third version
+    hGrid3 = hGrid2.copy()
+    hGrid3 = increasePathCost(path2, hGrid3)
+    path3 = astar(grid, hGrid3, startLoc, endLoc)
+    print("\nThird AStar search complete.\nPath:")
+    print(path3)
+
+    print("\n\nHGRID")
+    print(hGrid)
+
+    print("\n\nHGRID2")
+    print(hGrid2)
+
+    print("\n\nHGRID3")
+    print(hGrid3)
     """
-
-    # Perform A* Search
-    path = astar(grid, hGrid, startLoc, endLoc)
-    print("\nAStar search complete.\nPath:")
-    print(path)
-
-    print("And some quick tests about specific path values")
-    print(path[0])
-    print(path[1])
-    print(path[2])
-    print(f"cost of path[0] is {hGrid.iat[path[0]]}")
 
     if DEBUG == True:
         print("\nProgram has closed successfully\n")
+
 
 ########################################################################
 
