@@ -14,7 +14,6 @@ import math
 
 # Global Variables
 DEBUG = True
-MAX_CLOSED = 100
 
 
 ########################################################################
@@ -51,18 +50,6 @@ class Node():
     def __eq__(self, other):
         return self.position == other.position
 
-########################################################################
-# Function to compare two nodes
-
-def compareNodes(a, b):
-    diff = 0.1
-    if (a.dist - b.dist) < diff and (a.hDist - b.hDist) < diff and (a.hGrid - b.hGrid) < diff and (a.rand - b.rand) < diff and (a.cost - b.cost) < diff:
-        return True
-
-    #if a.position == b.position:
-    #    return True
-    
-    return False
 
 ########################################################################
 
@@ -91,21 +78,21 @@ def astar(grid, hGrid, start, end):
 
     # Loop begins A* search
     while (len(openList) > 0):
+
         # Get current node (lowest cost node in openList)
         currentNode = openList[0]
         currentIndex = 0
         for index, item in enumerate(openList):
-            if item.cost < (currentNode.cost - 0.01):
+            if item.cost < currentNode.cost:
                 currentNode = item
                 currentIndex = index
 
         # Pop current node, add to closed
         openList.pop(currentIndex)
         closedList.append(currentNode)
-        #print(f"Size of closed is: {len(closedList)}")
 
         # Check if goal found
-        if currentNode.position == endNode.position:
+        if currentNode == endNode:
             path = []
             current = currentNode
             while current is not None:
@@ -115,11 +102,6 @@ def astar(grid, hGrid, start, end):
             if DEBUG == True:
                 print("astar func END")
             return path[::-1]
-
-        elif len(closedList) > 100:
-            path = []
-            print("closedList limit exceeded")
-            return path
 
         # Get children
         children = []
@@ -144,27 +126,23 @@ def astar(grid, hGrid, start, end):
         
         # Loop through children
         for child in children:
+
             # Catch children already closed
             for closedChild in closedList:
-                #if child == closedChild:
-                #    continue
-                if compareNodes(child, closedChild):
+                if child == closedChild:
                     continue
 
             # Create cost values
             child.dist = currentNode.dist + 1
-            child.hDist = ((child.position[0] - endNode.position[0]) ** 2 ) + ((child.position[1] - endNode.position[1]) ** 2 )
-            #print(f"child.hDist is {child.hDist}")
+            child.hDist = math.sqrt((child.position[0] - endNode.position[0]) ** 2 ) + ((child.position[1] - endNode.position[1]) ** 2 )
             child.hGrid = hGrid.iat[child.position]
             child.rand = 0      # Random offset variation disabled for now
-            child.cost = child.dist + (child.hDist) + child.hGrid + child.rand
+            child.cost = child.dist + child.hDist + child.hGrid + child.rand
 
             # Handle children already in open
             for openNode in openList:
                 # Skip if new path is longer
-                #if child == openNode and child.dist > openNode.dist:
-                #    continue
-                if compareNodes(child, openNode) and child.dist > (openNode.dist-0.01):
+                if child == openNode and child.dist > openNode.dist:
                     continue
             
             # Add child to open list
@@ -191,7 +169,7 @@ def increasePathCost(path, hGrid):
 
 
     for loc in shortPath:
-        hGrid.iat[loc] = hGrid.iat[loc] + 99
+        hGrid.iat[loc] = hGrid.iat[loc] + 10
 
     return hGrid
 
@@ -212,17 +190,6 @@ def visualizePath(path, start, end, visGrid):
     
     print(thisVis)
 
-
-########################################################################
-# Simple function for calculating distance
-
-def calcDist(start, end):
-    if DEBUG == True:
-        print("calcDist func START")
-
-    return math.sqrt((end[0]-start[0])**2 + (end[1] - start[1])**2)
-
-
 ########################################################################
 
 def main():
@@ -234,15 +201,15 @@ def main():
     grid = pd.read_csv(r"grids - testGrid1.csv")
    
     # Initialize Heuristic Grid
-    hGrid = pd.read_csv(r"grids - testGrid2Heuristic2.csv")
+    hGrid = pd.read_csv(r"grids - testGrid2Heuristic.csv")
 
     visGrid = pd.read_csv(r"grids - testGrid3Path.csv")
 
     # Test print grids
-    #print("grid:")
-    #print(grid)
-    #print("hGrid:")
-    #print(hGrid)
+    print("grid:")
+    print(grid)
+    print("hGrid:")
+    print(hGrid)
  
     
     # Initialize path of traversal
@@ -251,7 +218,7 @@ def main():
 
     # Intialize Agent
     start = (10, 3)
-    end = (1, 7)
+    end = (1, 3)
     tupac = Agent(start)
     if DEBUG == True:
         print("agent initialized with location ", end='')
@@ -261,52 +228,51 @@ def main():
 
     # Perform Initial A* Search
     path = astar(grid, hGrid, start, end)
-    
-    print(path)
-
     allPaths.append(path)
-    visualizePath(path, start, end, visGrid)
-    
-    # Calculate Juke Location
-    jukePercent = 0.9           # Distance where juke begine, 1 is start, 0 is destination, 0.5 halfway
-    totalDist = calcDist(start, end)    # Dist from start to end
-    jukeDist = totalDist * jukePercent  # Dist after which you start juking
 
-    for loc in path:
-        dist = calcDist(loc, end)
-        if dist-0.01 < jukeDist:
-            jukeLocation = loc
-            break
-    
-    pathStart = path[:path.index(jukeLocation)]
-    pathEnd = path[path.index(jukeLocation):]
-    
-
-    #print(f"\n\njukeLocation was {jukeLocation}")
-    #print(f"Actual distance being skipped is {calcDist(jukeLocation, end)}")
-    #print(f"pathEnd was {pathEnd}")
-    
-
-    
     # Perform Addititional A* Searches
-    addlSearches = 5
+    addlSearches = 4
     for n in range(addlSearches):
         hGrid = increasePathCost(path, hGrid)
-        newPath = astar(grid, hGrid, jukeLocation, end)
-        path = pathStart + newPath
-        if path in allPaths:
-            break
-        if len(newPath) > 0:
-            allPaths.append(path)
+        path = astar(grid, hGrid, start, end)
+        allPaths.append(path)
     
+    #allPaths.reverse()
     print("\n\nAll Paths:")
     count = 1
     for x in allPaths:
-        print(f"\n\nPath {count}:\n{x}\n")
+        print(f"Path {count}:\n{x}\n")
         visualizePath(x, start, end, visGrid)
         count +=1
+
     
-    
+
+
+
+    """
+    # Create second version
+    hGrid2 = hGrid.copy()
+    hGrid2 = increasePathCost(path, hGrid2)
+    path2 = astar(grid, hGrid2, startLoc, endLoc)
+    print("\nSecond AStar search complete.\nPath:")
+    print(path2)
+
+    # Create third version
+    hGrid3 = hGrid2.copy()
+    hGrid3 = increasePathCost(path2, hGrid3)
+    path3 = astar(grid, hGrid3, startLoc, endLoc)
+    print("\nThird AStar search complete.\nPath:")
+    print(path3)
+
+    print("\n\nHGRID")
+    print(hGrid)
+
+    print("\n\nHGRID2")
+    print(hGrid2)
+
+    print("\n\nHGRID3")
+    print(hGrid3)
+    """
 
     if DEBUG == True:
         print("\nProgram has closed successfully\n")
