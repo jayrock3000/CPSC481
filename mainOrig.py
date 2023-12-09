@@ -13,7 +13,7 @@ import numpy
 import math
 
 # Global Variables
-DEBUG = True
+DEBUG = False
 
 
 ########################################################################
@@ -234,6 +234,7 @@ def main():
     addlSearches = 4
     for n in range(addlSearches):
         hGrid = increasePathCost(path, hGrid)
+        print(hGrid)
         path = astar(grid, hGrid, start, end)
         allPaths.append(path)
     
@@ -246,7 +247,7 @@ def main():
         count +=1
 
     
-
+    
 
 
     """
