@@ -3,8 +3,6 @@
 # By Jeffrey Rhoten
 #
 # main.py
-#
-# DESCRIPTION - WIP
 ########################################################################
 
 # Import Statements
@@ -132,6 +130,7 @@ def astar(grid, hGrid, start, end):
                 print("astar func END")
             return path[::-1]
 
+        # Catch an infinitely expanding closedList - this is a bug fix
         elif len(closedList) > MAX_CLOSED:
             path = []
             #print("closedList limit exceeded")
@@ -188,7 +187,8 @@ def astar(grid, hGrid, start, end):
 
 
 ########################################################################
-# Function for adding random amounts to heuristics
+# Function for increasing the cost of the previous path
+# so subsequent runs will be forced to find another
 
 def increasePathCost(path, hGrid):
     if DEBUG == True:
@@ -637,6 +637,7 @@ def main():
         # Performs the pathfinding algorithm search
         if selection == 1:
             multiAStar(grid, hGrid, visGrid, start, end, juke, searches)
+            hGrid = pd.read_csv(hGridPath) # Reset hGrid costs
 
         # Allows user to change grid files without restarting program
         elif selection == 2:
@@ -666,6 +667,7 @@ def main():
         # User can change location where algorithm begins juking (looking for alternative paths)
         elif selection == 5:
             juke = getJuke()
+            displayJuke = round((1-juke)*100)
 
         # User can change number of alternative paths algorithm attempts to generate
         elif selection == 6:
